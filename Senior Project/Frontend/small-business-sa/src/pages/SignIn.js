@@ -1,7 +1,6 @@
 import './App.css';
 import { useNavigate } from "react-router-dom";
-import SignIn from "./pages/SignIn";
-import CreateUser from "./pages/CreateUser";
+
 function App() {
 
   const navigate = useNavigate();
@@ -28,11 +27,11 @@ function App() {
         </p>
 
         <button onClick={() => handleDashboardButton(false)}>
-          Dashboard
+          Submit
         </button>
 
-        <button onClick={() => navigate("/CreateUser")}>
-          Create User
+        <button onClick={() => navigate("/create-user")}>
+          No account? Create a New User Here
         </button>
 
       </header>
