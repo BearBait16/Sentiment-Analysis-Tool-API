@@ -1,12 +1,10 @@
-from flask import Flask, request, jsonify
 from transformers import pipeline
 from passlib.hash import argon2
 from argon2 import PasswordHasher
 import secrets
 import psycopg2 
-
-# Just to make sure that it's working
-app = Flask(__name__)
+import jsonify
+import json
 
 # Sets up the pipeline so that the server can run the requests faster
 pipe = pipeline("text-classification", model="finiteautomata/bertweet-base-sentiment-analysis")    
@@ -26,34 +24,27 @@ cur = conn.cursor()
 # Sets up Argon2 hashing
 ph = PasswordHasher()
 
-# Browser Check
-@app.route('/')
-def home():
-    return "It's working"
-
 
 
 # Single review sentiment
-@app.route('/single_sentiment', methods=['POST'])
-def singleSentiment():
-    isVerified = authentication()
-    if isVerified:
-        data = request.get_json()
-        review = data['text']
-        result = pipe(review)
-        addSingleAPIUse() 
-        return jsonify({"review": review, "sentiment": result})
-    else:
+def singleSentiment(event):
+    if not authentication(event):
         return jsonify({"Error": "AUTHENTICATION FAILURE"})
+    
+    data = json.loads(event["body"])
+    review = data['text']
+    result = pipe(review)
+    addSingleAPIUse() 
+    return jsonify({"review": review, "sentiment": result})
+
 
 
 
 # Batch review sentiment
-@app.route('/batch_sentiment', methods=['POST'])
-def batchSentiment():
+def batchSentiment(event):
     isVerified = authentication()
     if isVerified:
-        data = request.get_json()
+        data = json.loads(event["body"])
         reviews = {}
         for review in data:
             reviewID = review['id']
@@ -70,9 +61,8 @@ def batchSentiment():
 
 
 # User Creation
-@app.route('/user_creation', methods=['POST'])
-def userCreation():
-    data = request.get_json()
+def userCreation(event):
+    data = json.loads(event["body"])
     username = data['name']
     password = data['password']
     hashed_password = argon2.hash(password)
@@ -98,9 +88,10 @@ def generateAPIKey():
 
 
 # User Authentication for API usage
-def authentication():
-    username = request.headers.get("x-username")
-    api_key = request.headers.get("x-api-key") # Checks the header for a api key 
+def authentication(event):
+    headers = event.get("headers", {})
+    username = headers.get("x-username")
+    api_key = headers.get("x-api-key") # Checks the header for a api key 
     if api_key == None: # If none are provided, immidiatley sends an error
         return False
     check_query = """
@@ -119,8 +110,9 @@ WHERE user_name = %s
 
 
 # A funciton that handles adding a use to the database
-def addSingleAPIUse():
-    username = request.headers.get("x-username")
+def addSingleAPIUse(event):
+    headers = event.get("headers", {})
+    username = headers.get("x-username")
     update_query = """
 UPDATE users 
 SET api_usage = api_usage + 1
@@ -131,8 +123,9 @@ WHERE user_name = %s;
 
 
 
-def addBatchAPIUse(uses):
-    username = request.headers.get("x-username")
+def addBatchAPIUse(event, uses):
+    headers = event.get("headers", {})
+    username = headers.get("x-username")
     update_query = """
 UPDATE users 
 SET api_usage = api_usage + %s
@@ -141,6 +134,35 @@ WHERE user_name = %s;
     cur.execute(update_query, (uses, username))
     conn.commit()
 
-# Basic Running of the API
-if __name__ == '__main__':
-    app.run(debug= True)
+def response(status, body):
+    return {
+        "statusCode": status,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps(body)
+    }
+
+def lambda_handler(event, context):
+
+    path = event.get("rawPath")
+    method = event.get("requestContext", {}).get("http", {}).get("method")
+
+    try:
+        if path == "/":
+            return response(200, "It's working")
+
+        elif path == "/single_sentiment" and method == "POST":
+            return single_sentiment(event)
+
+        elif path == "/batch_sentiment" and method == "POST":
+            return batch_sentiment(event)
+
+        elif path == "/user_creation" and method == "POST":
+            return user_creation(event)
+
+        else:
+            return response(404, {"error": "Route not found"})
+
+    except Exception as e:
+        return response(500, {"error": str(e)})
