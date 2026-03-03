@@ -1,0 +1,4 @@
+flask
+transformers
+passlib
+psycopg2-binary

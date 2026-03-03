@@ -1,7 +1,7 @@
-import './App.css';
+import './SignIn.css';
 import { useNavigate } from "react-router-dom";
 
-function App() {
+function SignIn() {
 
   const navigate = useNavigate();
 
@@ -20,10 +20,9 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>Welcome to My Senior Project</p>
+        <p>Sign in!</p>
         <p>
-          Sentiment Analysis for Small Business
-          Using Social Media
+          <entry></entry>
         </p>
 
         <button onClick={() => handleDashboardButton(false)}>
@@ -39,4 +38,4 @@ function App() {
   );
 }
 
-export default App;
+export default SignIn;

@@ -1,42 +1,20 @@
-import './App.css';
-import { useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import LearnMore from "./pages/LearnMore";
+import UserDashboard from "./pages/UserDashboard";
 import SignIn from "./pages/SignIn";
 import CreateUser from "./pages/CreateUser";
+
 function App() {
-
-  const navigate = useNavigate();
-
-  function handleDashboardButton(signedIn) {
-    let page = "";
-
-    if (signedIn === true) {
-      page = "/UserDashboard";
-    } else {
-      page = "/SignIn";
-    }
-
-    navigate(page);
-  }
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>Welcome to My Senior Project</p>
-        <p>
-          Sentiment Analysis for Small Business
-          Using Social Media
-        </p>
-
-        <button onClick={() => handleDashboardButton(false)}>
-          Dashboard
-        </button>
-
-        <button onClick={() => navigate("/CreateUser")}>
-          Create User
-        </button>
-
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/LearnMore" element={<LearnMore />} />
+      <Route path="/UserDashboard" element={<UserDashboard />} />
+      <Route path="/SignIn" element={<SignIn />} />
+      <Route path="/CreateUser" element={<CreateUser />} />
+    </Routes>
   );
 }
 

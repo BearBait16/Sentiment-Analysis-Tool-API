@@ -50,3 +50,5 @@ logs
 
 # Storybook build
 storybook-static
+
+.lambda-function/
