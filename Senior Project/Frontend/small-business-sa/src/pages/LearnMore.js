@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 function LearnMore()
 {
     const navigate = useNavigate();
-    <p>This was inspired by something I had the chance to research and prototype during my internship. It wasn't 
+
+    return(   
+        <p>This was inspired by something I had the chance to research and prototype during my internship. It wasn't 
         within the scope of what they were doing. I think something like this will work for small businesses hosted
         on social media though!
 
@@ -13,10 +15,11 @@ function LearnMore()
 
         I learned how API generation and tracking works, learned how to navigate and host full stack programs on AWS. We did it!
         Look ma! All development!
-        <button onClick={()=>navigate("/App.js")}>
+        <button onClick={()=>navigate("../")}>
             Back to Home Page
         </button>
     </p>
-}
+    )
 
+}
 export default LearnMore;
