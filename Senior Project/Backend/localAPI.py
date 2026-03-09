@@ -4,9 +4,11 @@ from passlib.hash import argon2
 from argon2 import PasswordHasher
 import secrets
 import psycopg2 
+from flask_cors import CORS
 
 # Just to make sure that it's working
 app = Flask(__name__)
+CORS(app)
 
 # Sets up the pipeline so that the server can run the requests faster
 pipe = pipeline("text-classification", model="finiteautomata/bertweet-base-sentiment-analysis")    
@@ -30,7 +32,29 @@ ph = PasswordHasher()
 def home():
     return "It's working"
 
-
+# Checks Sign in
+@app.route('/sign_in', methods=['Post'])
+def signIn():
+    data = request.get_json()
+    username = data["name"]
+    password = data["password"]
+    sql_query = """
+    SELECT password
+    FROM users
+    WHERE user_name = %s
+    """
+    cur.execute(sql_query, (username,))
+    row = cur.fetchone() # Grabs one row from the query. Remember, if there's more than one, that's bad.
+    if row == None: # If a row isn't there, than the account doesn't exsist
+        return jsonify({"isGood": False})
+    
+    print(row[0])
+    print(type(row[0]))
+    storedHash = row[0] # The only thing in the row of the query is the hashed password, so grab it and verify it
+    isVerified = argon2.verify(password, storedHash)
+    if isVerified:
+        return jsonify({"isGood": True})
+    return jsonify({"isGood": False})
 
 # Single review sentiment
 @app.route('/single_sentiment', methods=['POST'])
@@ -44,8 +68,6 @@ def singleSentiment():
         return jsonify({"review": review, "sentiment": result})
     else:
         return jsonify({"Error": "AUTHENTICATION FAILURE"})
-
-
 
 # Batch review sentiment
 @app.route('/batch_sentiment', methods=['POST'])
@@ -66,9 +88,8 @@ def batchSentiment():
     else:
         return jsonify({"Error": "AUTHENTICATION FAILURE"})
 
-
-
 # User Creation
+# need to add username verification. There can't be 2 users with the same username
 @app.route('/user_creation', methods=['POST'])
 def userCreation():
     data = request.get_json()
@@ -87,15 +108,11 @@ def userCreation():
     conn.commit()
     return jsonify(apiKey, apiMessage)
 
-
-
 # Generates an API key for a user
 def generateAPIKey():
     apiKey = secrets.token_urlsafe(32)
     hashed_key = ph.hash(apiKey) # Hashes the api, returning both.
     return apiKey, hashed_key
-
-
 
 # User Authentication for API usage
 def authentication():
@@ -104,10 +121,10 @@ def authentication():
     if api_key == None: # If none are provided, immidiatley sends an error
         return False
     check_query = """
-SELECT api_key
-FROM users
-WHERE user_name = %s
-"""
+    SELECT api_key
+    FROM users
+    WHERE user_name = %s
+    """
     cur.execute(check_query, (username,))
     row = cur.fetchone()
     if row == None:
@@ -115,8 +132,6 @@ WHERE user_name = %s
     storedHash = row[0]
     isVerified = ph.verify(storedHash, api_key)
     return isVerified
-
-
 
 # A funciton that handles adding a use to the database
 def addSingleAPIUse():
@@ -129,8 +144,6 @@ WHERE user_name = %s;
     cur.execute(update_query, (username,))
     conn.commit()
 
-
-
 def addBatchAPIUse(uses):
     username = request.headers.get("x-username")
     update_query = """
@@ -141,6 +154,7 @@ WHERE user_name = %s;
     cur.execute(update_query, (uses, username))
     conn.commit()
 
+
 # Basic Running of the API
 if __name__ == '__main__':
-    app.run(debug= True)
+    app.run(host="0.0.0.0", port=5000, debug= False)
