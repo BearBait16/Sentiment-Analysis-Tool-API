@@ -1,0 +1,42 @@
+{
+  "participants": [
+    { "name": "Coffee Lover" },
+    { "name": "Artisan Coffee Co." }
+  ],
+  "messages": [
+    {
+      "sender_name": "Artisan Coffee Co.",
+      "timestamp_ms": 1741775641000,
+      "content": "You're very welcome! Let us know how you like the roast.",
+      "is_geoblocked_for_viewer": false
+    },
+    {
+      "sender_name": "Coffee Lover",
+      "timestamp_ms": 1741775600000,
+      "content": "Perfect, just placed my order. Thanks for the quick help!",
+      "reactions": [
+        {
+          "reaction": "❤️",
+          "actor": "Artisan Coffee Co."
+        }
+      ],
+      "is_geoblocked_for_viewer": false
+    },
+    {
+      "sender_name": "Artisan Coffee Co.",
+      "timestamp_ms": 1741775500000,
+      "content": "Hi there! Yes, our Ethiopia Yirgacheffe is back in stock as of this morning. You can find it under the 'Single Origin' tab on our site.",
+      "is_geoblocked_for_viewer": false
+    },
+    {
+      "sender_name": "Coffee Lover",
+      "timestamp_ms": 1741775400000,
+      "content": "Hello! Is your seasonal espresso blend back in stock yet?",
+      "is_geoblocked_for_viewer": false
+    }
+  ],
+  "title": "Coffee Lover",
+  "is_still_participant": true,
+  "thread_type": "Regular",
+  "thread_path": "inbox/coffeelover_123456789"
+}

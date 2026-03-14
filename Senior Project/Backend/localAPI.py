@@ -21,6 +21,7 @@ conn = psycopg2.connect(
     host="localhost",
     port="5432"
 )
+
 # Sets up connection to the Database
 cur = conn.cursor()
 
@@ -56,6 +57,19 @@ def signIn():
         return jsonify({"isGood": True})
     return jsonify({"isGood": False})
 
+# Instagram Json Processing and Image Generation
+@app.route('/insta_processing')
+def instaProcessing():
+    data = request.get_json()
+    items = []
+    id = 0
+    for item in data:
+        entryId = id
+        content = item["content"]
+        timestamp = item["timestamp_ms"]
+        items.append(entryId, content, timestamp)
+        id += 1
+    
 # Single review sentiment
 @app.route('/single_sentiment', methods=['POST'])
 def singleSentiment():
@@ -144,6 +158,7 @@ WHERE user_name = %s;
     cur.execute(update_query, (username,))
     conn.commit()
 
+# A function running a batch of sentiment
 def addBatchAPIUse(uses):
     username = request.headers.get("x-username")
     update_query = """
@@ -153,7 +168,6 @@ WHERE user_name = %s;
 """    
     cur.execute(update_query, (uses, username))
     conn.commit()
-
 
 # Basic Running of the API
 if __name__ == '__main__':
